@@ -3,8 +3,8 @@ if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
 
 return [
     'ACTIVE'         => 'Y',
-    'NAME'           => 'Новости',
-    'CODE'           => 'news',
+    'NAME'           => 'Кастомные новости',
+    'CODE'           => 'custom_news',
     'IBLOCK_TYPE_ID' => 'content',
     'SITE_ID'        => ['s1'],
     'VERSION'        => 2,

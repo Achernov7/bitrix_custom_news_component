@@ -27,13 +27,11 @@ class NewsRepository
             return new self((int)$idOrCode);
         }
 
-        $rs = CIBlock::GetList([], [
-            'TYPE'   => $type,
-            'CODE'   => (string)$idOrCode,
-            'ACTIVE' => 'Y',
-        ]);
-        if ($row = $rs->Fetch()) {
-            return new self((int)$row['ID']);
+        $code = (string)$idOrCode;
+        foreach ([['TYPE' => $type, 'CODE' => $code], ['CODE' => $code]] as $filter) {
+            if ($row = CIBlock::GetList([], $filter + ['ACTIVE' => 'Y'])->Fetch()) {
+                return new self((int)$row['ID']);
+            }
         }
 
         return null;
