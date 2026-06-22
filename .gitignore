@@ -1,0 +1,24 @@
+# MySQL runtime data — автоматически инициализируется из bitrix.sql при первом старте
+docker-data/
+
+tz/
+
+# PHP vendor
+standard_encode/vendor/
+php-tools/vendor/
+
+# Картинки новостей — загружаются сидером при первом запуске
+standard_encode/upload/iblock/
+!standard_encode/upload/iblock/.gitkeep
+
+# Битрикс — генерируемые файлы
+standard_encode/upload/resize_cache/
+!standard_encode/upload/resize_cache/.gitkeep
+standard_encode/upload/tmp/
+!standard_encode/upload/tmp/.gitkeep
+standard_encode/bitrix/cache/
+standard_encode/bitrix/managed_cache/
+standard_encode/bitrix/stack_cache/
+
+# macOS
+.DS_Store

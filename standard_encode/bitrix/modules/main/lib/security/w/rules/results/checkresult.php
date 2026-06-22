@@ -1,0 +1,1 @@
+<? namespace Bitrix\Main\Security\W\Rules\Results; class CheckResult extends RuleResult{ protected $_381880173; protected $_1275322879; public function __construct($_381880173, $_1275322879){ $this->_381880173= $_381880173; $this->_1275322879= $_1275322879;} public function isSuccess(){ return $this->_381880173;}  public function getAction(){ return $this->_1275322879;}}?>
