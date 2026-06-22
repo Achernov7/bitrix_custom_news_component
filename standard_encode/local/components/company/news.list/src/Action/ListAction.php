@@ -56,10 +56,15 @@ final class ListAction implements ComponentAction
             $APPLICATION->AddChainItem(htmlspecialcharsbx($section['NAME']));
         }
 
-        // Cache key: iblock + filter (вкл. раздел) + page + размер страницы + группы пользователя
+        // Cache key: iblock + СЫРЫЕ значения фильтра + page + размер страницы + группы пользователя.
+        // Важно: ключ строим на getRaw(), а НЕ на toConditions(). В кешируемый результат
+        // входит NAV_STRING, чьи ссылки содержат текущую query-строку (year/category/даты).
+        // toConditions() при заданных датах отбрасывает year (приоритет дат), поэтому запросы
+        // с разным year и одинаковыми датами схлопнулись бы в один ключ — и в пагинацию вмёрз
+        // бы year первого запроса. getRaw() однозначно определяет и условия, и вид URL.
         $cacheId = md5(
             $c->iblockId
-            . ':' . serialize($filter->toConditions())
+            . ':' . serialize($filter->getRaw())
             . ':p' . $page
             . ':n' . $c->params->newsCount
             . ':g' . implode(',', $USER->GetUserGroupArray())

@@ -56,28 +56,30 @@ class NewsFilter
     /** Условия фильтра для подмешивания в фильтр инфоблока. */
     public function toConditions(): array
     {
-        if ($this->hasError()) {
-            return [];
-        }
-
         $conditions = [];
 
-        if ($this->tsFrom !== false || $this->tsTo !== false) {
-            // Явный диапазон дат имеет приоритет над годом.
-            // DATE_ACTIVE_FROM роутится через FilterCreateEx и поддерживает все операторы,
-            // в отличие от ACTIVE_FROM (case в GetList генерирует только >= или <).
-            if ($this->tsFrom !== false) {
-                $conditions['>=DATE_ACTIVE_FROM'] = ConvertTimeStamp($this->tsFrom, 'FULL');
+        // Временной фильтр (даты/год) применяем только если диапазон корректен.
+        // При ошибке диапазона его игнорируем, но раздел (см. ниже) сохраняем —
+        // иначе на странице категории всплыли бы новости из всех разделов.
+        if (!$this->hasError()) {
+            if ($this->tsFrom !== false || $this->tsTo !== false) {
+                // Явный диапазон дат имеет приоритет над годом.
+                // DATE_ACTIVE_FROM роутится через FilterCreateEx и поддерживает все операторы,
+                // в отличие от ACTIVE_FROM (case в GetList генерирует только >= или <).
+                if ($this->tsFrom !== false) {
+                    $conditions['>=DATE_ACTIVE_FROM'] = ConvertTimeStamp($this->tsFrom, 'FULL');
+                }
+                if ($this->tsTo !== false) {
+                    $conditions['<=DATE_ACTIVE_FROM'] = ConvertTimeStamp($this->tsTo, 'FULL');
+                }
+            } elseif ($this->raw['year'] !== '') {
+                $year = (int)$this->raw['year'];
+                $conditions['>=DATE_ACTIVE_FROM'] = ConvertTimeStamp(mktime(0, 0, 0, 1, 1, $year), 'FULL');
+                $conditions['<=DATE_ACTIVE_FROM'] = ConvertTimeStamp(mktime(23, 59, 59, 12, 31, $year), 'FULL');
             }
-            if ($this->tsTo !== false) {
-                $conditions['<=DATE_ACTIVE_FROM'] = ConvertTimeStamp($this->tsTo, 'FULL');
-            }
-        } elseif ($this->raw['year'] !== '') {
-            $year = (int)$this->raw['year'];
-            $conditions['>=DATE_ACTIVE_FROM'] = ConvertTimeStamp(mktime(0, 0, 0, 1, 1, $year), 'FULL');
-            $conditions['<=DATE_ACTIVE_FROM'] = ConvertTimeStamp(mktime(23, 59, 59, 12, 31, $year), 'FULL');
         }
 
+        // Раздел не зависит от валидности дат — применяется всегда.
         if ($this->raw['category'] > 0) {
             $conditions['SECTION_ID'] = $this->raw['category'];
         }
