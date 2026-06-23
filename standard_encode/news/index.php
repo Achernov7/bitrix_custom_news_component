@@ -84,8 +84,8 @@ $APPLICATION->IncludeComponent(
 	"company:news.list", 
 	".default", 
 	[
-		"IBLOCK_TYPE" => "news",
-		"IBLOCK_ID" => "custom_news",
+		"IBLOCK_TYPE" => "content",
+		"IBLOCK_ID" => "news",
 		"NEWS_COUNT" => "10",
 		"SEF_MODE" => "Y",
 		"SEF_FOLDER" => "/news/",

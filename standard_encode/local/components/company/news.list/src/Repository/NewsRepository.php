@@ -18,7 +18,7 @@ class NewsRepository
     private function __construct(private int $iblockId) {}
 
     /**
-     * Фабрика: принимает ID или символьный код инфоблока.
+     * Фабрика: принимает тип, числовой ID или символьный код инфоблока.
      * Возвращает null, если инфоблок не найден.
      */
     public static function locate(string $type, string|int $idOrCode): ?self
@@ -27,14 +27,14 @@ class NewsRepository
             return new self((int)$idOrCode);
         }
 
-        $code = (string)$idOrCode;
-        foreach ([['TYPE' => $type, 'CODE' => $code], ['CODE' => $code]] as $filter) {
-            if ($row = CIBlock::GetList([], $filter + ['ACTIVE' => 'Y'])->Fetch()) {
-                return new self((int)$row['ID']);
-            }
-        }
+        // Штатная связка IBLOCK_TYPE + IBLOCK_ID: ищем строго по типу и коду.
+        $row = CIBlock::GetList([], [
+            'TYPE'   => $type,
+            'CODE'   => (string)$idOrCode,
+            'ACTIVE' => 'Y',
+        ])->Fetch();
 
-        return null;
+        return $row ? new self((int)$row['ID']) : null;
     }
 
     public function iblockId(): int
@@ -81,6 +81,9 @@ class NewsRepository
             ['ID', 'NAME', 'CODE', 'ACTIVE_FROM', 'PREVIEW_TEXT', 'PREVIEW_PICTURE', 'IBLOCK_SECTION_ID']
         );
 
+        // GetNext() — стандартный подход Битрикс: каждое поле возвращается в двух вариантах:
+        // NAME (прошло через htmlspecialcharsEx, безопасно для прямого вывода в HTML) и
+        // ~NAME (сырое значение — для SetTitle/AddChainItem/truncate и т.п.).
         // GetNext() — стандартный подход Битрикс: каждое поле возвращается в двух вариантах:
         // NAME (прошло через htmlspecialcharsEx, безопасно для прямого вывода в HTML) и
         // ~NAME (сырое значение — для SetTitle/AddChainItem/truncate и т.п.).

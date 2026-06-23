@@ -1,25 +1,31 @@
 <?php
 if (!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true) die();
 
-use Bitrix\Iblock\TypeTable;
-
 class IblockTypeSeeder
 {
     public function ensure(array $config): array
     {
-        $existing = TypeTable::getList([
-            'filter' => ['=ID' => $config['ID']],
-            'limit'  => 1,
-        ])->fetch();
+        $obj = new CIBlockType();
 
-        if ($existing) {
-            return ["Тип инфоблока «{$config['ID']}» уже существует"];
+        // Используем CIBlockType (а не D7 TypeTable::add) намеренно: он пишет
+        // языковые названия в b_iblock_type_lang. Без этой записи тип не попадает
+        // в CIBlockParameters::GetIBlockTypes() — выпадашка «Тип инфоблока» в
+        // параметрах компонента его не показывает, и IBLOCK_TYPE сбивается на
+        // первый доступный тип при сохранении. Тип content приходит из дампа БД
+        // без языковой записи, поэтому даже для существующего типа досинхронизируем
+        // названия через Update.
+        if (CIBlockType::GetByID($config['ID'])->Fetch()) {
+            if (!$obj->Update($config['ID'], ['LANG' => $config['LANG']])) {
+                throw new RuntimeException(
+                    'Не удалось обновить тип инфоблока: ' . $obj->LAST_ERROR
+                );
+            }
+            return ["Тип инфоблока «{$config['ID']}» уже существует — синхронизированы названия"];
         }
 
-        $result = TypeTable::add($config);
-        if (!$result->isSuccess()) {
+        if (!$obj->Add($config)) {
             throw new RuntimeException(
-                'Не удалось создать тип инфоблока: ' . implode(', ', $result->getErrorMessages())
+                'Не удалось создать тип инфоблока: ' . $obj->LAST_ERROR
             );
         }
 

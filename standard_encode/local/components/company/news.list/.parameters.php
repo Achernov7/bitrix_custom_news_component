@@ -7,8 +7,14 @@ if (!Loader::includeModule('iblock')) return;
 
 $arIBlockType = CIBlockParameters::GetIBlockTypes();
 
+// Список инфоблоков фильтруем по выбранному типу — у IBLOCK_TYPE стоит REFRESH=Y,
+// поэтому при смене типа .parameters.php перевычисляется и список обновляется.
 $arIBlock = [];
-$rsIBlock = CIBlock::GetList(['SORT' => 'ASC'], ['ACTIVE' => 'Y']);
+$iblockFilter = ['ACTIVE' => 'Y'];
+if (!empty($arCurrentValues['IBLOCK_TYPE'])) {
+    $iblockFilter['TYPE'] = $arCurrentValues['IBLOCK_TYPE'];
+}
+$rsIBlock = CIBlock::GetList(['SORT' => 'ASC'], $iblockFilter);
 while ($arr = $rsIBlock->Fetch()) {
     $arIBlock[$arr['ID']] = '[' . $arr['ID'] . '] ' . $arr['NAME'];
 }
